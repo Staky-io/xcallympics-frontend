@@ -44,8 +44,6 @@ const ModalSlider = forwardRef<ModalSliderRefType, ModalSliderProps>((props, glo
         setCurrentSlide(0)
         setIsReady(false)
         refreshHeight()
-
-        console.log('reset')
     }
 
     useEffect(() => {

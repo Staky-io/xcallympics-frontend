@@ -1,6 +1,7 @@
 import './globals.css'
 import type { Metadata } from 'next'
 import { Noto_Sans } from 'next/font/google'
+import { UserStoreProvider } from '~/stores/User'
 
 const notoSans = Noto_Sans({
     weight: ['400', '500', '600', '700'],
@@ -21,7 +22,11 @@ export default function RootLayout({
 }) {
     return (
         <html lang="en">
-            <body className={`${notoSans.variable} font-sans bg-black text-grey`}>{children}</body>
+            <body className={`${notoSans.variable} font-sans bg-black text-grey`}>
+                <UserStoreProvider>
+                    {children}
+                </UserStoreProvider>
+            </body>
         </html>
     )
 }
