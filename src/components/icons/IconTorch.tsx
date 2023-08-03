@@ -75,8 +75,8 @@ export default function IconClose(props: IconProps) {
                     y2="32.1798"
                     gradientUnits="userSpaceOnUse"
                 >
-                    <stop offset="0.260417" stop-color="#FEB5FF"/>
-                    <stop offset="0.880208" stop-color="#C661FF"/>
+                    <stop offset="0.260417" stopColor="#FEB5FF"/>
+                    <stop offset="0.880208" stopColor="#C661FF"/>
                 </linearGradient>
             </defs>
         </svg>
