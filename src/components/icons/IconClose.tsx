@@ -7,6 +7,7 @@ export default function IconClose(props: IconProps) {
             height='19'
             viewBox='0 0 18 19' fill='none' xmlns='http://www.w3.org/2000/svg'
             className={props.className}
+            style={props.style}
         >
             <g clipPath='url(#clip0_32_4722)'>
                 <mask

@@ -2,6 +2,7 @@
 
 import { useContext } from 'react'
 import { Button, Dropdown } from '~/components/common'
+import { Header } from '~/components/ui'
 import { UserStoreContext } from '~/stores/User'
 import { ChainId } from '~/types'
 
@@ -10,6 +11,7 @@ export default function Home() {
 
     return (
         <main>
+            <Header />
             <div className='w-full flex flex-row mt-128'>
                 {userState.isLoggedIn ? (
                     <Button

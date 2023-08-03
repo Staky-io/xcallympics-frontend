@@ -9,6 +9,7 @@ export default function IconDropdown(props: IconProps) {
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
             className={props.className}
+            style={props.style}
         >
             <mask
                 id="mask0_236_2787"
