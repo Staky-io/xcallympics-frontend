@@ -1,10 +1,10 @@
-import { AddressesList, ChainId, NetworkList } from '~/types'
+import { AddressesList, BTPId, ChainId, NetworkList } from '~/types'
 
 export const NETWORKS: NetworkList = {
     [ChainId.ETH_SEPOLIA]: {
         chainId: BigInt(ChainId.ETH_SEPOLIA),
         chainName: 'Sepolia',
-        btpID: '0xaa36a7.eth2',
+        btpID: BTPId.ETH_SEPOLIA,
         rpcUrls: ['https://sepolia.infura.io/v3/'],
         nativeCurrency: {
             name: 'SepoliaETH',
@@ -16,7 +16,7 @@ export const NETWORKS: NetworkList = {
     [ChainId.BSC_TESTNET]: {
         chainId: BigInt(ChainId.BSC_TESTNET),
         chainName: 'BSC Testnet',
-        btpID: '0x61.bsc',
+        btpID: BTPId.BSC_TESTNET,
         rpcUrls: ['https://bsc-testnet.publicnode.com'],
         nativeCurrency: {
             name: 'Testnet BNB',

@@ -4,13 +4,12 @@ import { useEffect, createContext, PropsWithChildren } from 'react'
 import { ethers } from 'ethers'
 import { useImmer } from 'use-immer'
 import { NETWORKS } from '~/helpers/constants'
-import { ChainId } from '~/types'
 
 type UserStoreState = {
     isLoggedIn: boolean
     address: string
     balance: bigint
-    chainId: ChainId
+    chainId: bigint
     provider: ethers.BrowserProvider | null
     signer: ethers.JsonRpcSigner | null
     wrongNetwork: boolean
@@ -27,7 +26,7 @@ const defaultState: UserStoreState = {
     isLoggedIn: false,
     address: '',
     balance: BigInt(0),
-    chainId: ChainId.BSC_TESTNET,
+    chainId: BigInt(0),
     provider: null,
     signer: null,
     wrongNetwork: false
@@ -38,24 +37,29 @@ const UserStoreContext = createContext({
 } as UserStoreContextType)
 
 const UserStoreProvider = ({ children }: PropsWithChildren) => {
-    const [userState, setUserState] = useImmer({ ...defaultState })
+    const [userState, setUserState] = useImmer(defaultState)
 
     const supportedChainIds = Object.keys(NETWORKS).map((n: string) => BigInt(NETWORKS[n].chainId))
 
-    const disconnect = () => setUserState(() => defaultState)
+    const disconnect = () => {
+        console.log('disconnect - exec')
+        setUserState(() => defaultState)
+    }
 
     const loginUser = async (provider: ethers.BrowserProvider, accounts: string[]) => {
         const signer = new ethers.JsonRpcSigner(provider, accounts[0])
         const { chainId } = await provider.getNetwork()
         const balance = await provider.getBalance(accounts[0])
 
+        console.log('loginUser - exec')
+
         setUserState((s) => {
             s.isLoggedIn = true
             s.address = accounts[0]
-            s.balance = BigInt(balance)
+            s.balance = balance
             s.provider = provider
             s.signer = signer
-            s.chainId = BigInt(chainId) as unknown as ChainId
+            s.chainId = chainId
             s.wrongNetwork = !supportedChainIds.includes(chainId)
         })
     }
@@ -66,34 +70,12 @@ const UserStoreProvider = ({ children }: PropsWithChildren) => {
             const accounts = await provider.send('eth_requestAccounts', [])
 
             await loginUser(provider, accounts)
-
-            window.ethereum.on('chainChanged', async (chainId: string) => {
-                const balance = await provider.getBalance(accounts[0])
-
-                setUserState((s) => {
-                    s.balance = BigInt(balance)
-                    s.chainId = BigInt(chainId) as unknown as ChainId
-                    s.wrongNetwork = !supportedChainIds.includes(BigInt(chainId))
-                })
-            })
-
-            window.ethereum.on('accountsChanged', async (accounts: string[]) => {
-                if (accounts.length === 0) {
-                    disconnect()
-                    return
-                }
-
-                const balance = await provider.getBalance(accounts[0])
-
-                setUserState((s) => {
-                    s.balance = BigInt(balance)
-                    s.address = accounts[0]
-                })
-            })
         }
     }
 
     const switchChain = async (chainId: bigint) => {
+        if (!userState.isLoggedIn) return
+
         if (window.ethereum) {
             try {
                 const network = NETWORKS[chainId.toString()]
@@ -123,22 +105,56 @@ const UserStoreProvider = ({ children }: PropsWithChildren) => {
 
     useEffect(() => {
         const autoLoginUser = async () => {
-            if (window.ethereum && !userState.isLoggedIn) {
+            if (window.ethereum) {
                 const provider = new ethers.BrowserProvider(window.ethereum, 'any')
                 const accounts = await provider.send('eth_accounts', [])
 
-                if (accounts.length > 0) {
+                if (!userState.isLoggedIn && accounts.length > 0) {
+                    console.log('autoLoginUser', accounts)
                     await loginUser(provider, accounts)
-                } else {
-                    disconnect()
                 }
+
+                window.ethereum.on('chainChanged', async (chainId: string) => {
+                    console.log('chainChanged', BigInt(chainId))
+                    console.log('isLoggedIn', userState)
+
+                    console.log('chainChanged - updated', chainId)
+
+                    setUserState((s) => {
+                        s.chainId = BigInt(chainId)
+                        s.wrongNetwork = !supportedChainIds.includes(BigInt(chainId))
+                    })
+                })
+
+                window.ethereum.on('accountsChanged', async (accounts: string[]) => {
+                    if (accounts.length === 0) {
+                        disconnect()
+                        return
+                    }
+
+                    const balance = await provider.getBalance(accounts[0])
+                    const signer = new ethers.JsonRpcSigner(provider, accounts[0])
+                    const { chainId } = await provider.getNetwork()
+
+                    setUserState((s) => {
+                        s.signer = signer
+                        s.chainId = chainId
+                        s.balance = balance
+                        s.address = accounts[0]
+                    })
+                })
             }
+
         }
 
         autoLoginUser()
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
+
+    useEffect(() => {
+        console.log('chainId changed useEffect', userState.chainId)
+    }, [userState.chainId])
 
     return (
         <UserStoreContext.Provider value={{

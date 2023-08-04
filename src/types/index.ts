@@ -3,6 +3,11 @@ export enum ChainId {
     BSC_TESTNET = 97
 }
 
+export enum BTPId {
+    ETH_SEPOLIA = '0xaa36a7.eth2',
+    BSC_TESTNET = '0x61.bsc'
+}
+
 export type NetworkItem = {
     chainId: bigint;
     chainName: string;

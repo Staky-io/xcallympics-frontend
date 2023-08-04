@@ -45,13 +45,13 @@ export default function Dropdown(props: DropdownProps) {
     useEffect(() => {
         if (props.selected) {
             const option = props.options.find(item => item.value === props.selected)
-            setSelected(option)
 
-            if (props.onChange && option) {
-                props.onChange(option.value as string)
+            if (option !== selected) {
+                console.log('setting selected', option)
+                setSelected(option)
             }
         }
-    }, [props])
+    }, [props, selected])
 
     return (
         <div
@@ -66,7 +66,7 @@ export default function Dropdown(props: DropdownProps) {
             </div>
 
             {isOpen && (
-                <div className='absolute top-full left-0 w-full bg-white rounded shadow-lg'>
+                <div className='absolute z-10 top-full left-0 w-full bg-white rounded shadow-lg'>
                     {props.options.filter((item) => item.value !== selected?.value).map((item, index) => (
                         <div
                             key={index}

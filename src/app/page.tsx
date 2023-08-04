@@ -1,14 +1,52 @@
 'use client'
 
-import { useContext } from 'react'
+import { useState, useEffect, useContext } from 'react'
 import { Button, Dropdown, Heading } from '~/components/common'
 import { IconNotFound } from '~/components/icons'
 import { ComponentContainer, Header, PageContainer } from '~/components/ui'
 import { UserStoreContext } from '~/stores/User'
-import { ChainId } from '~/types'
+import { BTPId, ChainId } from '~/types'
 
 export default function Home() {
     const { userState, disconnect, switchChain, connectWallet } = useContext(UserStoreContext)
+    const [destionationChain, setDestionationChain] = useState<BTPId>(BigInt(0) as unknown as BTPId)
+    const [originChain, setOriginChain] = useState<bigint>(BigInt(0))
+
+    const changeOriginChain = (ChainID: bigint) => {
+        switch (ChainID) {
+            case BigInt(ChainId.BSC_TESTNET):
+                setDestionationChain(BTPId.ETH_SEPOLIA)
+                switchChain(BigInt(ChainId.BSC_TESTNET))
+                setOriginChain(BigInt(ChainId.BSC_TESTNET))
+                break
+            case BigInt(ChainId.ETH_SEPOLIA):
+                setDestionationChain(BTPId.BSC_TESTNET)
+                switchChain(BigInt(ChainId.ETH_SEPOLIA))
+                setOriginChain(BigInt(ChainId.ETH_SEPOLIA))
+                break
+        }
+    }
+
+    const changeDestinationChain = (btpId: BTPId) => {
+        switch (btpId) {
+            case BTPId.BSC_TESTNET:
+                setDestionationChain(BTPId.BSC_TESTNET)
+                switchChain(BigInt(ChainId.ETH_SEPOLIA))
+                setOriginChain(BigInt(ChainId.ETH_SEPOLIA))
+                break
+            case BTPId.ETH_SEPOLIA:
+                setDestionationChain(BTPId.ETH_SEPOLIA)
+                switchChain(BigInt(ChainId.BSC_TESTNET))
+                setOriginChain(BigInt(ChainId.BSC_TESTNET))
+                break
+        }
+    }
+
+    useEffect(() => {
+        console.log('userState.chainId', BigInt(userState.chainId))
+        console.log('chainId.BSC_TESTNET', BigInt(ChainId.BSC_TESTNET))
+        console.log('chainId.ETH_SEPOLIA', BigInt(ChainId.ETH_SEPOLIA))
+    }, [userState.chainId])
 
     return (
         <main>
@@ -33,18 +71,30 @@ export default function Home() {
                     )}
                     <Dropdown
                         className='mt-10 w-448'
-                        placeholder='Choose destination chain'
-                        selected={userState.chainId}
+                        label={true}
+                        placeholder='Origin chain'
+                        selected={userState.isLoggedIn ? userState.chainId : originChain}
                         options={[
                             { label: 'BSC Testnet', value: BigInt(ChainId.BSC_TESTNET) },
                             { label: 'Ethereum Sepolia', value: BigInt(ChainId.ETH_SEPOLIA) }
                         ]}
-                        onChange={(value) => switchChain(value as bigint)}
+                        onChange={(value) => changeOriginChain(value as bigint)}
+                    />
+                    <Dropdown
+                        label={true}
+                        className='mt-10 w-448'
+                        placeholder='Destination chain'
+                        selected={destionationChain}
+                        options={[
+                            { label: 'BSC Testnet', value: BTPId.BSC_TESTNET },
+                            { label: 'Ethereum Sepolia', value: BTPId.ETH_SEPOLIA }
+                        ]}
+                        onChange={(value) => changeDestinationChain(value as BTPId)}
                     />
                 </ComponentContainer>
 
                 <ComponentContainer className='flex flex-col justify-center items-center min-h-604'>
-                    <Heading level={3} className='mb-32 text-grey-secondary font-bold'>404</Heading>
+                    <Heading level={3} className='mb-32 text-grey-secondary font-bold'>No cute boi here ...</Heading>
                     <IconNotFound className='w-64 h-64' />
                 </ComponentContainer>
             </PageContainer>
