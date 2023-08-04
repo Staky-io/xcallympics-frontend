@@ -2,9 +2,55 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+    /* Misc */
+    --color-disabled: #3A4455;
+    --color-dark: #25253A;
+
+    /* Pink */
+    --color-pink: #C661FF;
+    --color-pink-light: #FEB5FF;
+
+    /* Primary */
+    --color-primary: #3D6EFF;
+    --color-primary-light: #ADC8FF;
+    --color-primary-dark: #1939B7;
+
+    /* Grey */
+    --color-grey: #F9FAFF;
+    --color-grey-secondary: #6E7191;
+    --color-grey-tertiary: #B6BFCD;
+
+    /* Black */
+    --color-black: #080A0C;
+    --color-black-secondary: #111318;
+    --color-black-tertiary: #191D24;
+    --color-black-quaternary: #242932;
+
+    /* Info */
+    --color-info: #00C1FF;
+    --color-info-light: #C2F0FF;
+    --color-info-dark: #0070B7;
+
+    /* Warning */
+    --color-warning: #FFC400;
+    --color-warning-light: #FFEBAD;
+    --color-warning-dark: #B78401;
+
+    /* Error */
+    --color-error: #E03232;
+    --color-error-light: #FBC1AD;
+    --color-error-dark: #A11930;
+
+    /* Success */
+    --color-success: #00DBB6;
+    --color-success-light: #99FFC6;
+    --color-success-dark: #009093;
+}
+
 html, body {
     font-size: 16px;
-    background-color: var(--color-black);
+    background-color: var(--color-dark);
 }
 
 @media screen and (max-width: 640px) {
@@ -69,10 +115,6 @@ p.small {
 p.smaller {
     font-size: 0.75rem;
     line-height: 0.9375rem;
-}
-
-h1, h2, h3, h4, h5, h6 {
-    font-family: var(--font-fractul), sans-serif;
 }
 
 h1, h2, h3, h4, h6 {

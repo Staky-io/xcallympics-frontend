@@ -19,42 +19,47 @@ module.exports = {
             xxl: '1680px'
         },
         colors: {
-            disabled: '#3A4455',
-            grey: {
-                DEFAULT: '#F9FAFF',
-                secondary: '#637592',
-                tertiary: '#B6BFCD'
-            },
-            black: {
-                DEFAULT: '#080A0C',
-                secondary: '#111318',
-                tertiary: '#191D24',
-                quaternary: '#242932'
+            disabled: 'var(--color-disabled)',
+            dark: 'var(--color-dark)',
+            pink: {
+                DEFAULT: 'var(--color-pink)',
+                light: 'var(--color-pink-light)'
             },
             primary: {
-                DEFAULT: '#3D6EFF',
-                light: '#ADC8FF',
-                dark: '#1939B7'
+                DEFAULT: 'var(--color-primary)',
+                light: 'var(--color-primary-light)',
+                dark: 'var(--color-primary-dark)'
+            },
+            grey: {
+                DEFAULT: 'var(--color-grey)',
+                secondary: 'var(--color-grey-secondary)',
+                tertiary: 'var(--color-grey-tertiary)'
+            },
+            black: {
+                DEFAULT: 'var(--color-black)',
+                secondary: 'var(--color-black-secondary)',
+                tertiary: 'var(--color-black-tertiary)',
+                quaternary: 'var(--color-black-quaternary)'
             },
             info: {
-                DEFAULT: '#00C1FF',
-                light: '#C2F0FF',
-                dark: '#0070B7'
+                DEFAULT: 'var(--color-info)',
+                light: 'var(--color-info-light)',
+                dark: 'var(--color-info-dark)'
             },
             warning: {
-                DEFAULT: '#FFC400',
-                light: '#FFEBAD',
-                dark: '#B78401'
+                DEFAULT: 'var(--color-warning)',
+                light: 'var(--color-warning-light)',
+                dark: 'var(--color-warning-dark)'
             },
             error: {
-                DEFAULT: '#E03232',
-                light: '#FBC1AD',
-                dark: '#A11930'
+                DEFAULT: 'var(--color-error)',
+                light: 'var(--color-error-light)',
+                dark: 'var(--color-error-dark)'
             },
             success: {
-                DEFAULT: '#00DBB6',
-                light: '#99FFC6',
-                dark: '#009093'
+                DEFAULT: 'var(--color-success)',
+                light: 'var(--color-success-light)',
+                dark: 'var(--color-success-dark)'
             }
         },
         // Tailwind Utility : tracking-
@@ -155,6 +160,12 @@ module.exports = {
             full: '100%',
             'screen-w': '100vw',
             'screen-h': '100vh',
+
+            'sm': '576px',
+            'md': '768px',
+            'lg': '992px',
+            'xl': '1200px',
+            '2xl': '1400px',
 
             // Rem
             0: '0rem',

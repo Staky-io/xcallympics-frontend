@@ -22,7 +22,7 @@ export default function RootLayout({
 }) {
     return (
         <html lang="en">
-            <body className={`${notoSans.variable} font-sans bg-black text-grey`}>
+            <body className={`${notoSans.variable} font-sans bg-dark text-grey`}>
                 <UserStoreProvider>
                     {children}
                 </UserStoreProvider>
