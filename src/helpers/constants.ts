@@ -3,15 +3,15 @@ import { AddressesList, ChainId, NetworkList } from '~/types'
 export const NETWORKS: NetworkList = {
     [ChainId.ETH_SEPOLIA]: {
         chainId: BigInt(ChainId.ETH_SEPOLIA),
-        chainName: 'Ethereum Sepolia',
+        chainName: 'Sepolia',
         btpID: '0xaa36a7.eth2',
-        rpcUrls: ['https://rpc2.sepolia.org'],
+        rpcUrls: ['https://sepolia.infura.io/v3/'],
         nativeCurrency: {
-            name: 'Sepolia ETH',
+            name: 'SepoliaETH',
             symbol: 'ETH',
             decimals: 18
         },
-        blockExplorerUrls: ['https://sepolia.etherscan.io/']
+        blockExplorerUrls: ['https://sepolia.etherscan.io']
     },
     [ChainId.BSC_TESTNET]: {
         chainId: BigInt(ChainId.BSC_TESTNET),

@@ -104,9 +104,16 @@ const UserStoreProvider = ({ children }: PropsWithChildren) => {
                     btpID: undefined
                 }
 
-                await window.ethereum.request({
-                    method: 'wallet_addEthereumChain',
-                    params: [n]
+                window.ethereum.request({
+                    method: 'wallet_switchEthereumChain',
+                    params: [{ chainId: n.chainId }]
+                }).catch((error: { code: number }) => {
+                    if (error.code === 4902) {
+                        return window.ethereum.request({
+                            method: 'wallet_addEthereumChain',
+                            params: [n]
+                        })
+                    }
                 })
             } catch (switchError) {
                 console.error(switchError)
