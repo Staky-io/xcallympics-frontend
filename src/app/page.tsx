@@ -1,16 +1,19 @@
 'use client'
 
-import { useState, useEffect, useContext } from 'react'
+import { useState, useContext } from 'react'
 import { Button, Dropdown, Heading } from '~/components/common'
 import { IconNotFound } from '~/components/icons'
 import { ComponentContainer, Header, PageContainer } from '~/components/ui'
+import { useContract } from '~/hooks/contracts'
 import { UserStoreContext } from '~/stores/User'
 import { BTPId, ChainId } from '~/types'
+import { NFTBridge } from '~/types/abi'
 
 export default function Home() {
     const { userState, disconnect, switchChain, connectWallet } = useContext(UserStoreContext)
     const [destionationChain, setDestionationChain] = useState<BTPId>(BigInt(0) as unknown as BTPId)
     const [originChain, setOriginChain] = useState<bigint>(BigInt(0))
+    const NFTBridgeContract = useContract('NFTBridge') as NFTBridge
 
     const changeOriginChain = (ChainID: bigint) => {
         switch (ChainID) {
@@ -41,12 +44,6 @@ export default function Home() {
                 break
         }
     }
-
-    useEffect(() => {
-        console.log('userState.chainId', BigInt(userState.chainId))
-        console.log('chainId.BSC_TESTNET', BigInt(ChainId.BSC_TESTNET))
-        console.log('chainId.ETH_SEPOLIA', BigInt(ChainId.ETH_SEPOLIA))
-    }, [userState.chainId])
 
     return (
         <main>
@@ -96,6 +93,11 @@ export default function Home() {
                 <ComponentContainer className='flex flex-col justify-center items-center min-h-604'>
                     <Heading level={3} className='mb-32 text-grey-secondary font-bold'>No cute boi here ...</Heading>
                     <IconNotFound className='w-64 h-64' />
+                    <Button
+                        variant='primary'
+                        className='mt-32'
+                        onClick={() => NFTBridgeContract.mintNFT()}
+                    >Mint new runner NFT</Button>
                 </ComponentContainer>
             </PageContainer>
         </main>

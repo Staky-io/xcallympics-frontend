@@ -47,7 +47,6 @@ export default function Dropdown(props: DropdownProps) {
             const option = props.options.find(item => item.value === props.selected)
 
             if (option !== selected) {
-                console.log('setting selected', option)
                 setSelected(option)
             }
         }

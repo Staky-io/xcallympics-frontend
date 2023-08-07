@@ -42,7 +42,6 @@ const UserStoreProvider = ({ children }: PropsWithChildren) => {
     const supportedChainIds = Object.keys(NETWORKS).map((n: string) => BigInt(NETWORKS[n].chainId))
 
     const disconnect = () => {
-        console.log('disconnect - exec')
         setUserState(() => defaultState)
     }
 
@@ -50,8 +49,6 @@ const UserStoreProvider = ({ children }: PropsWithChildren) => {
         const signer = new ethers.JsonRpcSigner(provider, accounts[0])
         const { chainId } = await provider.getNetwork()
         const balance = await provider.getBalance(accounts[0])
-
-        console.log('loginUser - exec')
 
         setUserState((s) => {
             s.isLoggedIn = true
@@ -110,16 +107,10 @@ const UserStoreProvider = ({ children }: PropsWithChildren) => {
                 const accounts = await provider.send('eth_accounts', [])
 
                 if (!userState.isLoggedIn && accounts.length > 0) {
-                    console.log('autoLoginUser', accounts)
                     await loginUser(provider, accounts)
                 }
 
                 window.ethereum.on('chainChanged', async (chainId: string) => {
-                    console.log('chainChanged', BigInt(chainId))
-                    console.log('isLoggedIn', userState)
-
-                    console.log('chainChanged - updated', chainId)
-
                     setUserState((s) => {
                         s.chainId = BigInt(chainId)
                         s.wrongNetwork = !supportedChainIds.includes(BigInt(chainId))
@@ -151,10 +142,6 @@ const UserStoreProvider = ({ children }: PropsWithChildren) => {
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
-
-    useEffect(() => {
-        console.log('chainId changed useEffect', userState.chainId)
-    }, [userState.chainId])
 
     return (
         <UserStoreContext.Provider value={{
