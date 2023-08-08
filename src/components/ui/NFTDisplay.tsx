@@ -18,6 +18,7 @@ export default function NFTDisplay(props: { onClick?: (nftid: bigint) => void })
             await tx.wait(1)
             const newOwnedIds = await XCallympicsNFT.getUserOwnedTokens(userState.address)
             setOwnedIds(newOwnedIds)
+            props.onClick && props.onClick(newOwnedIds[newOwnedIds.length - 1])
         } catch (e) {
             console.error(e)
         }
@@ -33,24 +34,23 @@ export default function NFTDisplay(props: { onClick?: (nftid: bigint) => void })
             try {
                 const newOwnedIds = await XCallympicsNFT.getUserOwnedTokens(userState.address)
                 setOwnedIds(newOwnedIds)
+                props.onClick && props.onClick(newOwnedIds[newOwnedIds.length - 1])
             } catch (e) {
                 setOwnedIds([])
             }
         }
 
         getOwnedIds()
-    }, [XCallympicsNFT, userState.isLoggedIn, userState.address, userState.chainId])
+    }, [XCallympicsNFT, userState.isLoggedIn, userState.address, userState.chainId, props])
 
     return ownedIds.length > 0 ? (
         <div className='flex flex-row justify-start gap-20 flex-wrap my-0 mx-auto'>
             {ownedIds.map((nftid) => (
-                <>
-                    <NFTCard
-                        key={nftid.toString()}
-                        nftid={nftid}
-                        onClick={() => props.onClick && props.onClick(nftid)}
-                    />
-                </>
+                <NFTCard
+                    key={nftid.toString()}
+                    nftid={nftid}
+                    onClick={() => props.onClick && props.onClick(nftid)}
+                />
             ))}
         </div>
     ) : (

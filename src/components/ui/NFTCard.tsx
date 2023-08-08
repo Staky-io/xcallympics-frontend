@@ -34,7 +34,6 @@ export default function NFTCard(props: { nftid: bigint, onClick?: (nftid: bigint
 
                 setNftUri('')
             } catch (e) {
-                console.error(e)
                 setNftUri('')
             }
         }

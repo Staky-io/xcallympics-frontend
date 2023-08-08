@@ -6,12 +6,12 @@ type ButtonProps = {
     variant?: 'primary' | 'secondary' | 'tertiary' | 'stroke' | 'text' | 'cancel';
     size?: 'regular' | 'small' | 'smaller';
     disabled?: boolean;
-    center?: boolean;
+    centered?: boolean;
     onClick?: () => void;
 }
 
 export default function Button(props: ButtonProps) {
-    const { children, center, size, disabled = false, className, variant, onClick } = props
+    const { children, centered, size, disabled = false, className, variant, onClick } = props
 
     const mainStyle = 'py-12 px-16 rounded transition-all duration-200 select-none flex flex-row items-center'
     const primaryVariant = 'bg-primary hover:bg-primary-dark text-grey'
@@ -38,7 +38,7 @@ export default function Button(props: ButtonProps) {
 
     return (
         <button
-            className={`${mainStyle} ${center ? 'flex flex-row justify-center items-center' : ''} ${disabled ? disabledVariant : getVariant()}${className && className?.length > 0 ? ' ' + className : ''}`}
+            className={`${mainStyle} ${centered ? 'flex flex-row justify-center items-center' : ''} ${disabled ? disabledVariant : getVariant()}${className && className?.length > 0 ? ' ' + className : ''}`}
             onClick={disabled ? undefined : onClick}
             disabled={disabled}
         >

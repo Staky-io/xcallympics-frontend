@@ -3,7 +3,7 @@ import { AddressesList, BTPId, ChainId, NetworkList } from '~/types'
 export const NETWORKS: NetworkList = {
     [ChainId.ETH_SEPOLIA]: {
         chainId: BigInt(ChainId.ETH_SEPOLIA),
-        chainName: 'Sepolia',
+        chainName: 'Ethereum Sepolia',
         btpID: BTPId.ETH_SEPOLIA,
         rpcUrls: ['https://sepolia.infura.io/v3/'],
         nativeCurrency: {
