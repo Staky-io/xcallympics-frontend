@@ -7,6 +7,12 @@ const nextConfig = {
                 hostname: 'ipfs.io',
                 port: '',
                 pathname: '/ipfs/**'
+            },
+            {
+                protocol: 'https',
+                hostname: 'craft-network.mypinata.cloud',
+                port: '',
+                pathname: '/ipfs/**'
             }
         ]
     }

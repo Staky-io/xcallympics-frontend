@@ -1,4 +1,5 @@
 import Image from 'next/image'
+import axios from 'axios'
 import { useEffect, useState } from 'react'
 import { useContract } from '~/hooks/contracts'
 import { XCallympicsNFT } from '~/types/abi'
@@ -16,22 +17,36 @@ export default function NFTCard(props: { nftid: bigint, onClick?: (nftid: bigint
         }
 
         const getNftUri = async () => {
-            const uri = await XCallympicsNFT.tokenURI(nftid)
+            try {
+                const uri = await XCallympicsNFT.tokenURI(nftid)
 
-            if (!uri) {
+                if (!uri) {
+                    setNftUri('')
+                    return
+                }
+
+                if (uri.startsWith('https://ipfs.io/ipfs/')) {
+                    const req = await axios.get(uri)
+                    console.log('req', req)
+                    setNftUri(req.data.image)
+                    return
+                }
+
                 setNftUri('')
-                return
+            } catch (e) {
+                console.error(e)
+                setNftUri('')
             }
-
-            setNftUri(uri)
         }
 
         getNftUri()
     }, [XCallympicsNFT, nftid])
 
     return (
-        <div className='bg-grey rounded-15 overflow-hidden cursor-pointer'>
-            <Image alt={'XCallympics NFT'} src={nftUri} width={290} height={290} />
+        <div className='bg-grey rounded-15 overflow-hidden cursor-pointer border-1'>
+            {nftUri.length > 0 && (
+                <Image alt={'XCallympics NFT'} src={nftUri} width={290} height={290} />
+            )}
             <Text className='text-black p-10' size='small'>XCallympics NFT - #{nftid.toString()}</Text>
         </div>
     )

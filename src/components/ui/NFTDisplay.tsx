@@ -12,6 +12,17 @@ export default function NFTDisplay(props: { onClick?: (nftid: bigint) => void })
     const NFTBridgeContract = useContract('NFTBridge') as NFTBridge
     const XCallympicsNFT = useContract('XCallympicsNFT') as XCallympicsNFT
 
+    const mintNFT = async () => {
+        try {
+            const tx = await NFTBridgeContract.mintNFT()
+            await tx.wait(1)
+            const newOwnedIds = await XCallympicsNFT.getUserOwnedTokens(userState.address)
+            setOwnedIds(newOwnedIds)
+        } catch (e) {
+            console.error(e)
+        }
+    }
+
     useEffect(() => {
         if (!userState.isLoggedIn || !userState.address || !userState.chainId || !XCallympicsNFT) {
             setOwnedIds([])
@@ -19,8 +30,12 @@ export default function NFTDisplay(props: { onClick?: (nftid: bigint) => void })
         }
 
         const getOwnedIds = async () => {
-            const ownedIds = await XCallympicsNFT.getUserOwnedTokens(userState.address)
-            setOwnedIds(ownedIds)
+            try {
+                const newOwnedIds = await XCallympicsNFT.getUserOwnedTokens(userState.address)
+                setOwnedIds(newOwnedIds)
+            } catch (e) {
+                setOwnedIds([])
+            }
         }
 
         getOwnedIds()
@@ -29,11 +44,13 @@ export default function NFTDisplay(props: { onClick?: (nftid: bigint) => void })
     return ownedIds.length > 0 ? (
         <div className='flex flex-row justify-start gap-20 flex-wrap my-0 mx-auto'>
             {ownedIds.map((nftid) => (
-                <NFTCard
-                    key={nftid.toString()}
-                    nftid={nftid}
-                    onClick={() => props.onClick && props.onClick(nftid)}
-                />
+                <>
+                    <NFTCard
+                        key={nftid.toString()}
+                        nftid={nftid}
+                        onClick={() => props.onClick && props.onClick(nftid)}
+                    />
+                </>
             ))}
         </div>
     ) : (
@@ -43,7 +60,7 @@ export default function NFTDisplay(props: { onClick?: (nftid: bigint) => void })
             <Button
                 variant='primary'
                 className='mt-32'
-                onClick={() => NFTBridgeContract.mintNFT()}
+                onClick={() => mintNFT()}
             >Mint new runner NFT</Button>
         </>
     )
