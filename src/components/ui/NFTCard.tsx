@@ -5,7 +5,11 @@ import { useContract } from '~/hooks/contracts'
 import { XCallympicsNFT } from '~/types/abi'
 import { Text } from '~/components/common'
 
-export default function NFTCard(props: { nftid: bigint, onClick?: (nftid: bigint) => void }) {
+export default function NFTCard(props: {
+    nftid: bigint,
+    selected: boolean,
+    onClick?: (nftid: bigint) => void,
+}) {
     const { nftid } = props
     const [nftUri, setNftUri] = useState<string>('')
     const XCallympicsNFT = useContract('XCallympicsNFT') as XCallympicsNFT
@@ -42,9 +46,12 @@ export default function NFTCard(props: { nftid: bigint, onClick?: (nftid: bigint
     }, [XCallympicsNFT, nftid])
 
     return (
-        <div className='bg-grey rounded-15 overflow-hidden cursor-pointer border-1'>
+        <div
+            className={`bg-grey rounded-15 overflow-hidden cursor-pointer ${props.selected ? 'border-4 border-pink' : 'border-1 border-white'}`}
+            onClick={() => props.onClick && props.onClick(nftid)}
+        >
             {nftUri.length > 0 && (
-                <Image alt={'XCallympics NFT'} src={nftUri} width={290} height={290} />
+                <Image alt={'XCallympics NFT'} src={nftUri} width={280} height={280} />
             )}
             <Text className='text-black p-10' size='small'>XCallympics NFT - #{nftid.toString()}</Text>
         </div>

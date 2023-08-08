@@ -16,7 +16,10 @@ export default function Home() {
                 </ComponentContainer>
 
                 <ComponentContainer className='flex flex-col justify-center items-center min-h-604'>
-                    <NFTDisplay onClick={(nftid) => setSelectedNFT(nftid)} />
+                    <NFTDisplay
+                        onClick={(nftid) => setSelectedNFT(nftid)}
+                        selected={selectedNFT}
+                    />
                 </ComponentContainer>
             </PageContainer>
         </main>

@@ -6,7 +6,10 @@ import { UserStoreContext } from '~/stores/User'
 import { NFTBridge, XCallympicsNFT } from '~/types/abi'
 import NFTCard from './NFTCard'
 
-export default function NFTDisplay(props: { onClick?: (nftid: bigint) => void }) {
+export default function NFTDisplay(props: {
+    onClick?: (nftid: bigint) => void
+    selected: bigint
+}) {
     const { userState } = useContext(UserStoreContext)
     const [ownedIds, setOwnedIds] = useState<bigint[]>([])
     const NFTBridgeContract = useContract('NFTBridge') as NFTBridge
@@ -49,6 +52,7 @@ export default function NFTDisplay(props: { onClick?: (nftid: bigint) => void })
                 <NFTCard
                     key={nftid.toString()}
                     nftid={nftid}
+                    selected={props.selected === nftid}
                     onClick={() => props.onClick && props.onClick(nftid)}
                 />
             ))}
