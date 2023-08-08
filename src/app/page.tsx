@@ -1,13 +1,13 @@
 'use client'
 
 import { useState, useContext } from 'react'
-import { Button, Dropdown } from '~/components/common'
+import { Button, Dropdown, Text } from '~/components/common'
 import { ComponentContainer, Header, NFTDisplay, PageContainer } from '~/components/ui'
 import { UserStoreContext } from '~/stores/User'
 import { BTPId, ChainId } from '~/types'
 
 export default function Home() {
-    const { userState, disconnect, switchChain, connectWallet } = useContext(UserStoreContext)
+    const { userState, switchChain } = useContext(UserStoreContext)
     const [destionationChain, setDestionationChain] = useState<BTPId>(BigInt(0) as unknown as BTPId)
     const [originChain, setOriginChain] = useState<bigint>(BigInt(0))
 
@@ -46,45 +46,54 @@ export default function Home() {
             <Header />
             <PageContainer className='flex flex-row justify-center items-start gap-48 mt-128'>
                 {/* TODO: control UI + move to it's own component */}
-                <ComponentContainer>
-                    {userState.isLoggedIn ? (
-                        <Button
-                            variant='secondary'
-                            onClick={disconnect}
-                        >
-                            {`(${userState.address.slice(0, 5)}...${userState.address.slice(userState.address.length - 6, userState.address.length - 1)}) Disconnect`}
+                <ComponentContainer className='min-h-604 h-full flex flex-col justify-around'>
+                    <div>
+                        <Text>Origin blockchain</Text>
+                        <Dropdown
+                            className='mt-10 w-full'
+                            placeholder='Origin chain'
+                            selected={userState.isLoggedIn ? userState.chainId : originChain}
+                            options={[
+                                { label: 'BSC Testnet', value: BigInt(ChainId.BSC_TESTNET) },
+                                { label: 'Ethereum Sepolia', value: BigInt(ChainId.ETH_SEPOLIA) }
+                            ]}
+                            onChange={(value) => changeOriginChain(value as bigint)}
+                        />
+                        <Text className='mt-16'>Destination blockchain</Text>
+                        <Dropdown
+                            className='my-10 w-full'
+                            placeholder='Destination chain'
+                            selected={destionationChain}
+                            options={[
+                                { label: 'BSC Testnet', value: BTPId.BSC_TESTNET },
+                                { label: 'Ethereum Sepolia', value: BTPId.ETH_SEPOLIA }
+                            ]}
+                            onChange={(value) => changeDestinationChain(value as BTPId)}
+                        />
+                    </div>
+
+                    <div>
+                        <div className='w-full my-6 flex-row justify-between items-center inline-flex'>
+                            <Text>BTP fee</Text>
+                            <Text>0.1 ETH</Text>
+                        </div>
+
+                        <div className='w-full my-6 flex-row justify-between items-center inline-flex'>
+                            <Text>Gas fee</Text>
+                            <Text>0.1 ETH</Text>
+                        </div>
+
+                        <div className='bg-grey w-full h-1 my-10'></div>
+
+                        <div className='w-full flex-row justify-between items-center inline-flex'>
+                            <Text>Total fees</Text>
+                            <Text>0.1 ETH</Text>
+                        </div>
+
+                        <Button center={true} className='w-full mt-20'>
+                            Transfer to BSC
                         </Button>
-                    ) : (
-                        <Button
-                            variant='primary'
-                            className='mr-10'
-                            onClick={connectWallet}
-                        >
-                            Connect wallet
-                        </Button>
-                    )}
-                    <Dropdown
-                        className='mt-10 w-448'
-                        label={true}
-                        placeholder='Origin chain'
-                        selected={userState.isLoggedIn ? userState.chainId : originChain}
-                        options={[
-                            { label: 'BSC Testnet', value: BigInt(ChainId.BSC_TESTNET) },
-                            { label: 'Ethereum Sepolia', value: BigInt(ChainId.ETH_SEPOLIA) }
-                        ]}
-                        onChange={(value) => changeOriginChain(value as bigint)}
-                    />
-                    <Dropdown
-                        label={true}
-                        className='mt-10 w-448'
-                        placeholder='Destination chain'
-                        selected={destionationChain}
-                        options={[
-                            { label: 'BSC Testnet', value: BTPId.BSC_TESTNET },
-                            { label: 'Ethereum Sepolia', value: BTPId.ETH_SEPOLIA }
-                        ]}
-                        onChange={(value) => changeDestinationChain(value as BTPId)}
-                    />
+                    </div>
                 </ComponentContainer>
 
                 <ComponentContainer className='flex flex-col justify-center items-center min-h-604'>
