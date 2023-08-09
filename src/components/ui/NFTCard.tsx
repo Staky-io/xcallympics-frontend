@@ -31,7 +31,6 @@ export default function NFTCard(props: {
 
                 if (uri.startsWith('https://ipfs.io/ipfs/')) {
                     const req = await axios.get(uri)
-                    console.log('req', req)
                     setNftUri(req.data.image)
                     return
                 }

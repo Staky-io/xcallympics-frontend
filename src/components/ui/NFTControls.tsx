@@ -14,7 +14,8 @@ type NFTControlsProps = {
 
 export default function NFTControls(props: NFTControlsProps) {
     const { selectedNFT } = props
-    const { userState, switchChain } = useContext(UserStoreContext)
+    const { userState, switchChain, connectWallet } = useContext(UserStoreContext)
+
     const [destionationChain, setDestionationChain] = useState<BTPId>('' as BTPId)
     const [destinationChainId, setDestinationChainId] = useState<bigint>(BigInt(0))
     const [gasFee, setGasFee] = useState<bigint>(BigInt(0))
@@ -61,7 +62,7 @@ export default function NFTControls(props: NFTControlsProps) {
 
     const approveToken = async () => {
         try {
-            const approveTx = await XCallympicsNFTContract.approve(ADDRESSES[originChain.toString()].NFT_BRIDGE, selectedNFT)
+            const approveTx = await XCallympicsNFTContract.setApprovalForAll(ADDRESSES[parseInt(originChain.toString())].NFT_BRIDGE, true)
             await approveTx.wait()
             setIsTokenApproved(true)
         } catch (e) {
@@ -77,7 +78,6 @@ export default function NFTControls(props: NFTControlsProps) {
                     setGasFee(BigInt(0))
                 } else {
                     // TODO: use fixed gas price (non-approven tokens are throwing the gas estimate)
-                    console.log('selectedNFT', selectedNFT)
                     const to = getBTPAddress(destionationChain, ADDRESSES[destinationChainId.toString()].NFT_BRIDGE)
                     const feeData = await userState.provider.getFeeData()
                     const functionFee = await NFTBridgeContract.bridgeNFToChain.estimateGas(to, selectedNFT, {
@@ -86,7 +86,6 @@ export default function NFTControls(props: NFTControlsProps) {
                     })
 
                     if (feeData.maxFeePerGas) {
-                        console.log('fee', functionFee * feeData.maxFeePerGas)
                         setGasFee(functionFee * feeData.maxFeePerGas)
                     } else {
                         setGasFee(BigInt(0))
@@ -100,6 +99,24 @@ export default function NFTControls(props: NFTControlsProps) {
 
         getGasFee()
     }, [NFTBridgeContract, destionationChain, destinationChainId, userState.provider, selectedNFT, xcallFee])
+
+    useEffect(() => {
+        const checkApproval = async () => {
+            try {
+                if (!XCallympicsNFTContract) {
+                    setIsTokenApproved(false)
+                } else {
+                    const isApproved = await XCallympicsNFTContract.isApprovedForAll(userState.address, ADDRESSES[parseInt(originChain.toString())].NFT_BRIDGE)
+                    setIsTokenApproved(isApproved)
+                }
+            } catch (e) {
+                console.error(e)
+                setIsTokenApproved(false)
+            }
+        }
+
+        checkApproval()
+    }, [userState.address, XCallympicsNFTContract, originChain])
 
     return (
         <>
@@ -146,14 +163,31 @@ export default function NFTControls(props: NFTControlsProps) {
                     ) : '--'}
                 </div>
 
-                {/* TODO: approve token + connect wallet if offline + transfer */}
-                {originChain !== BigInt(0) && (
+                {(!isTokenApproved && userState.isLoggedIn && selectedNFT !== BigInt(0) && selectedNFT !== undefined && destinationChainId !== BigInt(0)) && (
                     <Button
                         className='w-full mt-20'
-                        disabled={destinationChainId === BigInt(0)}
+                        disabled={isTokenApproved}
+                        onClick={() => approveToken()}
+                        centered
+                    >
+                        Approve NFT for transfer
+                    </Button>
+                )}
+                {userState.isLoggedIn ? (
+                    <Button
+                        className='w-full mt-10'
+                        disabled={destinationChainId === BigInt(0) || !isTokenApproved || selectedNFT === BigInt(0) || selectedNFT === undefined}
                         centered
                     >
                         {destinationChainId === BigInt(0) ? 'Select destination chain' : `Transfer to ${NETWORKS[destinationChainId.toString()].chainName}`}
+                    </Button>
+                ) : (
+                    <Button
+                        className='w-full mt-20'
+                        centered
+                        onClick={() => connectWallet()}
+                    >
+                            Connect wallet
                     </Button>
                 )}
             </div>
