@@ -16,6 +16,7 @@ export default function NFTControls(props: NFTControlsProps) {
     const { selectedNFT } = props
     const { userState, switchChain, connectWallet } = useContext(UserStoreContext)
 
+    const [isReady, setIsReady] = useState<boolean>(false)
     const [destionationChain, setDestionationChain] = useState<BTPId>('' as BTPId)
     const [destinationChainId, setDestinationChainId] = useState<bigint>(BigInt(0))
     const [gasFee, setGasFee] = useState<bigint>(BigInt(0))
@@ -62,7 +63,7 @@ export default function NFTControls(props: NFTControlsProps) {
 
     const approveToken = async () => {
         try {
-            const approveTx = await XCallympicsNFTContract.setApprovalForAll(ADDRESSES[parseInt(originChain.toString())].NFT_BRIDGE, true)
+            const approveTx = await XCallympicsNFTContract.approve(ADDRESSES[parseInt(originChain.toString())].NFT_BRIDGE, selectedNFT)
             await approveTx.wait()
             setIsTokenApproved(true)
         } catch (e) {
@@ -71,22 +72,35 @@ export default function NFTControls(props: NFTControlsProps) {
         }
     }
 
+    const transferNFT = async () => {
+        try {
+            const to = getBTPAddress(destionationChain, userState.address)
+            const transferTx = await NFTBridgeContract.bridgeNFToChain(to, selectedNFT, {
+                value: xcallFee
+            })
+            await transferTx.wait()
+        } catch (e) {
+            console.error(e)
+        }
+    }
+
     useEffect(() => {
         const getGasFee = async () => {
             try {
-                if (destionationChain.length === 0 || destinationChainId === BigInt(0) || !NFTBridgeContract || selectedNFT === BigInt(0) || !selectedNFT || userState.provider === null) {
+                if (!isReady || !userState.provider || !isTokenApproved) {
                     setGasFee(BigInt(0))
                 } else {
                     // TODO: use fixed gas price (non-approven tokens are throwing the gas estimate)
-                    const to = getBTPAddress(destionationChain, ADDRESSES[destinationChainId.toString()].NFT_BRIDGE)
+                    const to = getBTPAddress(destionationChain, userState.address)
                     const feeData = await userState.provider.getFeeData()
+
                     const functionFee = await NFTBridgeContract.bridgeNFToChain.estimateGas(to, selectedNFT, {
                         value: xcallFee,
-                        gasPrice: feeData.maxFeePerGas
+                        gasPrice: feeData.gasPrice
                     })
 
-                    if (feeData.maxFeePerGas) {
-                        setGasFee(functionFee * feeData.maxFeePerGas)
+                    if (feeData.gasPrice) {
+                        setGasFee(functionFee * feeData.gasPrice)
                     } else {
                         setGasFee(BigInt(0))
                     }
@@ -98,16 +112,16 @@ export default function NFTControls(props: NFTControlsProps) {
         }
 
         getGasFee()
-    }, [NFTBridgeContract, destionationChain, destinationChainId, userState.provider, selectedNFT, xcallFee])
+    }, [isReady, NFTBridgeContract, destionationChain, destinationChainId, userState.provider, userState.address, selectedNFT, xcallFee, isTokenApproved])
 
     useEffect(() => {
         const checkApproval = async () => {
             try {
-                if (!XCallympicsNFTContract) {
+                if (!isReady) {
                     setIsTokenApproved(false)
                 } else {
-                    const isApproved = await XCallympicsNFTContract.isApprovedForAll(userState.address, ADDRESSES[parseInt(originChain.toString())].NFT_BRIDGE)
-                    setIsTokenApproved(isApproved)
+                    const approvedAddress = await XCallympicsNFTContract.getApproved(selectedNFT)
+                    setIsTokenApproved(approvedAddress === ADDRESSES[parseInt(originChain.toString())].NFT_BRIDGE)
                 }
             } catch (e) {
                 console.error(e)
@@ -116,7 +130,25 @@ export default function NFTControls(props: NFTControlsProps) {
         }
 
         checkApproval()
-    }, [userState.address, XCallympicsNFTContract, originChain])
+    }, [isReady, userState.address, XCallympicsNFTContract, selectedNFT, originChain])
+
+    useEffect(() => {
+        if (
+            destionationChain.length === 0
+            || destinationChainId === BigInt(0)
+            || !NFTBridgeContract
+            || !XCallympicsNFTContract
+            || selectedNFT === BigInt(0)
+            || !selectedNFT
+            || userState.provider === null
+            || !xcallFee
+            || xcallFee === BigInt(0)
+        ) {
+            setIsReady(false)
+        } else {
+            setIsReady(true)
+        }
+    }, [NFTBridgeContract, XCallympicsNFTContract, destinationChainId, destionationChain.length, selectedNFT, userState.provider, xcallFee])
 
     return (
         <>
@@ -177,6 +209,7 @@ export default function NFTControls(props: NFTControlsProps) {
                     <Button
                         className='w-full mt-10'
                         disabled={destinationChainId === BigInt(0) || !isTokenApproved || selectedNFT === BigInt(0) || selectedNFT === undefined}
+                        onClick={() => transferNFT()}
                         centered
                     >
                         {destinationChainId === BigInt(0) ? 'Select destination chain' : `Transfer to ${NETWORKS[destinationChainId.toString()].chainName}`}
