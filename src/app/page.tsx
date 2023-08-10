@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { ComponentContainer, Header, NFTControls, NFTDisplay, PageContainer } from '~/components/ui'
 
 export default function Home() {
-    const [selectedNFT, setSelectedNFT] = useState<bigint>(BigInt(0))
+    const [selectedNFT, setSelectedNFT] = useState<bigint>(0n)
 
     return (
         <main>

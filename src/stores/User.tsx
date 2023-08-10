@@ -10,7 +10,7 @@ type UserStoreState = {
     address: string
     balance: bigint
     chainId: bigint
-    provider: ethers.BrowserProvider | null
+    provider: ethers.BrowserProvider | ethers.AbstractProvider | null
     signer: ethers.JsonRpcSigner | null
     wrongNetwork: boolean
 }
@@ -25,8 +25,8 @@ type UserStoreContextType = {
 const defaultState: UserStoreState = {
     isLoggedIn: false,
     address: '',
-    balance: BigInt(0),
-    chainId: BigInt(0),
+    balance: 0n,
+    chainId: 0n,
     provider: null,
     signer: null,
     wrongNetwork: false
@@ -67,6 +67,11 @@ const UserStoreProvider = ({ children }: PropsWithChildren) => {
             const accounts = await provider.send('eth_requestAccounts', [])
 
             await loginUser(provider, accounts)
+        } else {
+            const provider = ethers.getDefaultProvider('sepolia')
+            setUserState((s) => {
+                s.provider = provider
+            })
         }
     }
 

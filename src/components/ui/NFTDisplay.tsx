@@ -15,12 +15,18 @@ export default function NFTDisplay(props: {
     const NFTBridgeContract = useContract('NFTBridge') as NFTBridge
     const XCallympicsNFT = useContract('XCallympicsNFT') as XCallympicsNFT
 
+    const checkOwnedTokens = async () => {
+        const newOwnedIds = await XCallympicsNFT.getUserOwnedTokens(userState.address)
+        setOwnedIds(newOwnedIds)
+
+        return newOwnedIds
+    }
+
     const mintNFT = async () => {
         try {
             const tx = await NFTBridgeContract.mintNFT()
             await tx.wait(1)
-            const newOwnedIds = await XCallympicsNFT.getUserOwnedTokens(userState.address)
-            setOwnedIds(newOwnedIds)
+            const newOwnedIds = await checkOwnedTokens()
             props.onClick && props.onClick(newOwnedIds[newOwnedIds.length - 1])
         } catch (e) {
             console.error(e)

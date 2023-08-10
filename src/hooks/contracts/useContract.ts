@@ -15,7 +15,7 @@ import {
     XCallympicsNFT__factory
 } from '~/types/abi'
 
-export default function useContract(factoryName: 'NFTBridge' | 'XCallympicsNFT' | 'BMC' | 'CallService') {
+export default function useContract(factoryName: 'NFTBridge' | 'XCallympicsNFT' | 'BMC' | 'CallService', network?: ChainId) {
     const [contract, setContract] = useState<NFTBridge | XCallympicsNFT | BMC | CallService>()
     const { userState } = useContext(UserStoreContext)
 
@@ -50,11 +50,11 @@ export default function useContract(factoryName: 'NFTBridge' | 'XCallympicsNFT' 
     }
 
     useEffect(() => {
-        const network = parseInt(userState.chainId.toString()) as ChainId
+        const selectedNetwork = network !== undefined ? network : parseInt(userState.chainId.toString()) as ChainId
 
-        if (network != ChainId.BSC_TESTNET && network != ChainId.ETH_SEPOLIA) return
+        if (selectedNetwork != ChainId.BSC_TESTNET && selectedNetwork != ChainId.ETH_SEPOLIA) return
 
-        const contractAddress = getAddress(network, factoryName)
+        const contractAddress = getAddress(selectedNetwork, factoryName)
         const factory = getFactory(factoryName)
 
         if (userState.signer != null) {
@@ -69,7 +69,7 @@ export default function useContract(factoryName: 'NFTBridge' | 'XCallympicsNFT' 
             }
 
         }
-    }, [factoryName, userState.provider, userState.signer, userState.chainId])
+    }, [factoryName, userState.provider, userState.signer, userState.chainId, network])
 
     return contract
 }

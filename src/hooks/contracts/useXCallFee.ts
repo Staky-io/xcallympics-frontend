@@ -13,14 +13,14 @@ type useXCallFeeProps = {
 
 export default function useXCallFee({ destionationChain, destinationChainId }: useXCallFeeProps) {
     const { userState } = useContext(UserStoreContext)
-    const [xcallFee, setXcallFee] = useState<bigint>(BigInt(0))
+    const [xcallFee, setXcallFee] = useState<bigint>(0n)
     const NFTBridgeContract = useContract('NFTBridge') as NFTBridge
 
     useEffect(() => {
         const getXCallFee = async () => {
             try {
-                if (destionationChain.length === 0 || destinationChainId === BigInt(0) || userState.chainId === BigInt(0) || !NFTBridgeContract) {
-                    setXcallFee(BigInt(0))
+                if (destionationChain.length === 0 || destinationChainId === 0n || userState.chainId === 0n || !NFTBridgeContract) {
+                    setXcallFee(0n)
                 } else {
                     const to = getBTPAddress(destionationChain, ADDRESSES[destinationChainId.toString()].NFT_BRIDGE)
                     const fee = await NFTBridgeContract.getXCallFee(to, true)
@@ -28,7 +28,7 @@ export default function useXCallFee({ destionationChain, destinationChainId }: u
                 }
             } catch (e) {
                 console.error(e)
-                setXcallFee(BigInt(0))
+                setXcallFee(0n)
             }
         }
 

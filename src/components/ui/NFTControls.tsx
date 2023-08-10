@@ -6,7 +6,7 @@ import { ADDRESSES, NETWORKS } from '~/helpers/constants'
 import { useContract, useXCallFee } from '~/hooks/contracts'
 import { UserStoreContext } from '~/stores/User'
 import { BTPId, ChainId } from '~/types'
-import { NFTBridge, XCallympicsNFT } from '~/types/abi'
+import { CallService, NFTBridge, XCallympicsNFT } from '~/types/abi'
 
 type NFTControlsProps = {
     selectedNFT: bigint;
@@ -18,14 +18,19 @@ export default function NFTControls(props: NFTControlsProps) {
 
     const [isReady, setIsReady] = useState<boolean>(false)
     const [destionationChain, setDestionationChain] = useState<BTPId>('' as BTPId)
-    const [destinationChainId, setDestinationChainId] = useState<bigint>(BigInt(0))
-    const [gasFee, setGasFee] = useState<bigint>(BigInt(0))
-    const [originChain, setOriginChain] = useState<bigint>(BigInt(0))
+    const [destinationChainId, setDestinationChainId] = useState<bigint>(0n)
+    const [gasFee, setGasFee] = useState<bigint>(0n)
+    const [originChain, setOriginChain] = useState<bigint>(0n)
     const [isTokenApproved, setIsTokenApproved] = useState<boolean>(false)
 
-    const NFTBridgeContract = useContract('NFTBridge') as NFTBridge
-    const XCallympicsNFTContract = useContract('XCallympicsNFT') as XCallympicsNFT
     const xcallFee = useXCallFee({ destionationChain, destinationChainId })
+
+    const NFTBridgeContract = useContract('NFTBridge') as NFTBridge
+    const NFTBridgeContractDestination = useContract('NFTBridge', parseInt(destinationChainId.toString())) as NFTBridge
+    const XCallympicsNFTContract = useContract('XCallympicsNFT') as XCallympicsNFT
+    const XCallympicsNFTContractDestionation = useContract('XCallympicsNFT', parseInt(destinationChainId.toString())) as XCallympicsNFT
+    const CallServiceContract = useContract('CallService') as CallService
+    const CallServiceContractDestionation = useContract('CallService', parseInt(destinationChainId.toString())) as CallService
 
     const changeOriginChain = (ChainID: bigint) => {
         switch (ChainID) {
@@ -85,10 +90,36 @@ export default function NFTControls(props: NFTControlsProps) {
     }
 
     useEffect(() => {
+        if (
+            destionationChain.length === 0
+            || destinationChainId === 0n
+            || !NFTBridgeContract
+            || !XCallympicsNFTContract
+            || selectedNFT === 0n
+            || !selectedNFT
+            || userState.provider === null
+            || !xcallFee
+            || xcallFee === 0n
+        ) {
+            setIsReady(false)
+        } else {
+            setIsReady(true)
+        }
+    }, [
+        NFTBridgeContract,
+        XCallympicsNFTContract,
+        destinationChainId,
+        destionationChain.length,
+        selectedNFT,
+        userState.provider,
+        xcallFee
+    ])
+
+    useEffect(() => {
         const getGasFee = async () => {
             try {
                 if (!isReady || !userState.provider || !isTokenApproved) {
-                    setGasFee(BigInt(0))
+                    setGasFee(0n)
                 } else {
                     // TODO: use fixed gas price (non-approven tokens are throwing the gas estimate)
                     const to = getBTPAddress(destionationChain, userState.address)
@@ -102,12 +133,12 @@ export default function NFTControls(props: NFTControlsProps) {
                     if (feeData.gasPrice) {
                         setGasFee(functionFee * feeData.gasPrice)
                     } else {
-                        setGasFee(BigInt(0))
+                        setGasFee(0n)
                     }
                 }
             } catch (e) {
                 console.error(e)
-                setGasFee(BigInt(0))
+                setGasFee(0n)
             }
         }
 
@@ -133,22 +164,34 @@ export default function NFTControls(props: NFTControlsProps) {
     }, [isReady, userState.address, XCallympicsNFTContract, selectedNFT, originChain])
 
     useEffect(() => {
-        if (
-            destionationChain.length === 0
-            || destinationChainId === BigInt(0)
-            || !NFTBridgeContract
-            || !XCallympicsNFTContract
-            || selectedNFT === BigInt(0)
-            || !selectedNFT
-            || userState.provider === null
-            || !xcallFee
-            || xcallFee === BigInt(0)
-        ) {
-            setIsReady(false)
-        } else {
-            setIsReady(true)
+        console.log('Registering events')
+
+        if (NFTBridgeContract) {
+            console.log('NFTBridgeContract', NFTBridgeContract)
+
+            NFTBridgeContract.on(NFTBridgeContract.getEvent('TokenBridgedToChain'), () => {
+                // eslint-disable-next-line prefer-rest-params
+                console.log('TokenBridgedToChain', arguments)
+            })
         }
-    }, [NFTBridgeContract, XCallympicsNFTContract, destinationChainId, destionationChain.length, selectedNFT, userState.provider, xcallFee])
+
+        if (CallServiceContract) {
+            console.log('CallServiceContract', CallServiceContract)
+
+            CallServiceContract?.on(CallServiceContract.getEvent('CallMessageSent'), (from, to, sn, nsn) => {
+                console.log('CallMessageSent', from, to, sn, nsn)
+            })
+        }
+
+        if (CallServiceContractDestionation) {
+            console.log('CallServiceContractDestionation', CallServiceContractDestionation)
+
+            CallServiceContractDestionation?.on(CallServiceContractDestionation.getEvent('CallMessage'), (from, to, sn, reqid) => {
+                console.log('CallMessage', from, to, sn, reqid)
+            })
+        }
+
+    }, [NFTBridgeContract, CallServiceContract, CallServiceContractDestionation, userState.address])
 
     return (
         <>
@@ -174,14 +217,14 @@ export default function NFTControls(props: NFTControlsProps) {
             <div>
                 <div className='w-full my-6 flex-row justify-between items-center inline-flex'>
                     <Text>BTP fee</Text>
-                    {originChain !== BigInt(0) ? (
+                    {originChain !== 0n ? (
                         <Text>{`${formatEther(xcallFee)} ${NETWORKS[originChain.toString()].nativeCurrency.symbol}`}</Text>
                     ) : '--'}
                 </div>
 
                 <div className='w-full my-6 flex-row justify-between items-center inline-flex'>
                     <Text>Gas fee</Text>
-                    {originChain !== BigInt(0) ? (
+                    {originChain !== 0n && gasFee !== 0n ? (
                         <Text>{`${formatEther(gasFee)} ${NETWORKS[originChain.toString()].nativeCurrency.symbol}`}</Text>
                     ) : '--'}
                 </div>
@@ -190,12 +233,12 @@ export default function NFTControls(props: NFTControlsProps) {
 
                 <div className='w-full flex-row justify-between items-center inline-flex'>
                     <Text>Total fees</Text>
-                    {originChain !== BigInt(0) ? (
+                    {originChain !== 0n ? (
                         <Text>{`${formatEther(xcallFee + gasFee)} ${NETWORKS[originChain.toString()].nativeCurrency.symbol}`}</Text>
                     ) : '--'}
                 </div>
 
-                {(!isTokenApproved && userState.isLoggedIn && selectedNFT !== BigInt(0) && selectedNFT !== undefined && destinationChainId !== BigInt(0)) && (
+                {(!isTokenApproved && userState.isLoggedIn && selectedNFT !== 0n && selectedNFT !== undefined && destinationChainId !== 0n) && (
                     <Button
                         className='w-full mt-20'
                         disabled={isTokenApproved}
@@ -208,11 +251,11 @@ export default function NFTControls(props: NFTControlsProps) {
                 {userState.isLoggedIn ? (
                     <Button
                         className='w-full mt-10'
-                        disabled={destinationChainId === BigInt(0) || !isTokenApproved || selectedNFT === BigInt(0) || selectedNFT === undefined}
+                        disabled={destinationChainId === 0n || !isTokenApproved || selectedNFT === 0n || selectedNFT === undefined}
                         onClick={() => transferNFT()}
                         centered
                     >
-                        {destinationChainId === BigInt(0) ? 'Select destination chain' : `Transfer to ${NETWORKS[destinationChainId.toString()].chainName}`}
+                        {destinationChainId === 0n ? 'Select destination chain' : `Transfer to ${NETWORKS[destinationChainId.toString()].chainName}`}
                     </Button>
                 ) : (
                     <Button
