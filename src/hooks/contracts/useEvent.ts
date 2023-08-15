@@ -6,30 +6,32 @@ import { getContractAddress, getContractInterface, getJsonRpcProviders } from '~
 
 export default function useEvent(
     contractName: 'NFTBridge' | 'XCallympicsNFT' | 'BMC' | 'CallService',
-    eventName: string,
-    callback: (event: ethers.EventLog | ethers.Log) => void,
+    eventFilter: ethers.ContractEvent,
+    callback: (event: ethers.ContractEventPayload) => void,
     network?: ChainId
 ) {
-    const providers = getJsonRpcProviders()
     const { userState } = useContext(UserStoreContext)
 
     useEffect(() => {
-        const selectedNetwork = network !== undefined ? network : parseInt(userState.chainId.toString()) as ChainId
+        const providers = getJsonRpcProviders()
+
+        if (!eventFilter) return
+
+        const selectedNetwork = network !== undefined ? network : Number(userState.chainId) as ChainId
         if (selectedNetwork != ChainId.BSC_TESTNET && selectedNetwork != ChainId.ETH_SEPOLIA) return
 
         const contractAddress = getContractAddress(selectedNetwork, contractName)
         const contractInterface = getContractInterface(contractName)
         const contract = new ethers.Contract(contractAddress, contractInterface, providers[selectedNetwork])
 
-        contract.on(eventName, callback)
+        contract.on(eventFilter(), callback)
 
         return () => {
-            contract.off(eventName, callback)
+            contract.removeAllListeners(eventFilter())
         }
     }, [
-        providers,
         contractName,
-        eventName,
+        eventFilter,
         network,
         userState.chainId,
         callback

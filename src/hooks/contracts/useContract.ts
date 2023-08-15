@@ -16,7 +16,7 @@ export default function useContract(factoryName: 'NFTBridge' | 'XCallympicsNFT' 
     const { userState } = useContext(UserStoreContext)
 
     useEffect(() => {
-        const selectedNetwork = network !== undefined ? network : parseInt(userState.chainId.toString()) as ChainId
+        const selectedNetwork = network !== undefined ? network : Number(userState.chainId) as ChainId
 
         if (selectedNetwork != ChainId.BSC_TESTNET && selectedNetwork != ChainId.ETH_SEPOLIA) return
 

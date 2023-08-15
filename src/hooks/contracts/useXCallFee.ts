@@ -1,9 +1,8 @@
 import { useContext, useEffect, useState } from 'react'
 import useContract from './useContract'
-import { getBTPAddress } from '~/helpers'
+import { getBTPAddress, getContractAddress } from '~/helpers'
 import { UserStoreContext } from '~/stores/User'
 import { BTPId } from '~/types'
-import { ADDRESSES } from '~/helpers/constants'
 import { NFTBridge } from '~/types/abi'
 
 type useXCallFeeProps = {
@@ -22,7 +21,7 @@ export default function useXCallFee({ destionationChain, destinationChainId }: u
                 if (destionationChain.length === 0 || destinationChainId === 0n || userState.chainId === 0n || !NFTBridgeContract) {
                     setXcallFee(0n)
                 } else {
-                    const to = getBTPAddress(destionationChain, ADDRESSES[destinationChainId.toString()].NFT_BRIDGE)
+                    const to = getBTPAddress(destionationChain, getContractAddress(Number(destinationChainId), 'NFTBridge'))
                     const fee = await NFTBridgeContract.getXCallFee(to, true)
                     setXcallFee(fee)
                 }
