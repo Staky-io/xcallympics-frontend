@@ -3,10 +3,10 @@ import { useState, useEffect, useContext } from 'react'
 import { Button, Dropdown, Text } from '~/components/common'
 import { getBTPAddress } from '~/helpers'
 import { ADDRESSES, NETWORKS } from '~/helpers/constants'
-import { useContract, useXCallFee } from '~/hooks/contracts'
+import { useContract, useEvent, useXCallFee } from '~/hooks/contracts'
 import { UserStoreContext } from '~/stores/User'
 import { BTPId, ChainId } from '~/types'
-import { CallService, NFTBridge, XCallympicsNFT } from '~/types/abi'
+import { NFTBridge, XCallympicsNFT } from '~/types/abi'
 
 type NFTControlsProps = {
     selectedNFT: bigint;
@@ -26,11 +26,7 @@ export default function NFTControls(props: NFTControlsProps) {
     const xcallFee = useXCallFee({ destionationChain, destinationChainId })
 
     const NFTBridgeContract = useContract('NFTBridge') as NFTBridge
-    const NFTBridgeContractDestination = useContract('NFTBridge', parseInt(destinationChainId.toString())) as NFTBridge
     const XCallympicsNFTContract = useContract('XCallympicsNFT') as XCallympicsNFT
-    const XCallympicsNFTContractDestionation = useContract('XCallympicsNFT', parseInt(destinationChainId.toString())) as XCallympicsNFT
-    const CallServiceContract = useContract('CallService') as CallService
-    const CallServiceContractDestionation = useContract('CallService', parseInt(destinationChainId.toString())) as CallService
 
     const changeOriginChain = (ChainID: bigint) => {
         switch (ChainID) {
@@ -163,35 +159,9 @@ export default function NFTControls(props: NFTControlsProps) {
         checkApproval()
     }, [isReady, userState.address, XCallympicsNFTContract, selectedNFT, originChain])
 
-    useEffect(() => {
-        console.log('Registering events')
-
-        if (NFTBridgeContract) {
-            console.log('NFTBridgeContract', NFTBridgeContract)
-
-            NFTBridgeContract.on(NFTBridgeContract.getEvent('TokenBridgedToChain'), () => {
-                // eslint-disable-next-line prefer-rest-params
-                console.log('TokenBridgedToChain', arguments)
-            })
-        }
-
-        if (CallServiceContract) {
-            console.log('CallServiceContract', CallServiceContract)
-
-            CallServiceContract?.on(CallServiceContract.getEvent('CallMessageSent'), (from, to, sn, nsn) => {
-                console.log('CallMessageSent', from, to, sn, nsn)
-            })
-        }
-
-        if (CallServiceContractDestionation) {
-            console.log('CallServiceContractDestionation', CallServiceContractDestionation)
-
-            CallServiceContractDestionation?.on(CallServiceContractDestionation.getEvent('CallMessage'), (from, to, sn, reqid) => {
-                console.log('CallMessage', from, to, sn, reqid)
-            })
-        }
-
-    }, [NFTBridgeContract, CallServiceContract, CallServiceContractDestionation, userState.address])
+    useEvent('NFTBridge', 'TokenBridgedToChain', async (...args: unknown[]) => {
+        console.log('TokenBridgedToChain', args)
+    })
 
     return (
         <>
