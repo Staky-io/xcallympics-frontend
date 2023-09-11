@@ -1,8 +1,27 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# XCallympics Frontend
 
-## Getting Started
+This is the frontend for the XCallympics project. It is a demonstrator dApp that uses XCalls to transfer a NFT between chains.
 
-First, run the development server:
+## Links
+
+- [Live demo (TBA)](#)
+- [Contracts repo](https://github.com/Staky-io/xcallympics-core/)
+
+## How it works
+
+This front-end starts by minting a new NFT on the selected chain, it will be displayed instantly on the front-end UI after the transaction goes through.
+
+When the user is ready, it then transfers the NFT to the other chain using XCalls and a [bridge contract](https://github.com/Staky-io/xcallympics-core/blob/main/contracts/NFTBridge.sol).
+
+The bridge contract is set as the owner of the [NFT contract](https://github.com/Staky-io/xcallympics-core/blob/main/contracts/utils/XCallympicsNFT.sol) on every chain, allowing it to burn the NFT on the original chain and mint it on the destination chain.
+
+In addition, the bridge contract uses [XCallBase](https://github.com/Staky-io/xcallympics-core/blob/main/contracts/utils/XCallBase.sol), a custom library that facilitates the use of XCalls.
+
+After the NFT has been transferred, the front-end listens for on-chain events to update the UI and prompts the user to execute the call on the other chain.
+
+## Run Locally
+
+First, install the dependencies, then, run the development server:
 
 ```bash
 npm run dev
@@ -14,21 +33,7 @@ pnpm dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## TODO
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+- [ ] Fix the event listener to update the UI when the NFT is transferred on the destination chain
+- [ ] Add a loading indicator when the user is waiting for a transaction to go through
