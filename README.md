@@ -19,6 +19,12 @@ In addition, the bridge contract uses [XCallBase](https://github.com/Staky-io/xc
 
 After the NFT has been transferred, the front-end listens for on-chain events to update the UI and prompts the user to execute the call on the other chain.
 
+## Curently supported chains
+
+- [x] Ethereum
+- [x] BSC
+- [ ] ICON
+
 ## Run Locally
 
 First, install the dependencies, then, run the development server:
