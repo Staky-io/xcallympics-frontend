@@ -182,7 +182,7 @@ export default function NFTControls(props: NFTControlsProps) {
         checkApproval()
     }, [isReady, userState.address, XCallympicsNFTContract, selectedNFT, originChain])
 
-    useEvent('NFTBridge', NFTBridgeContract?.filters['MessageSent(address,uint256,bytes)'](userState.address), async (data: ethers.Event[]) => {
+    useEvent('NFTBridge', NFTBridgeContract?.filters['MessageSent(address,uint256,bytes)'](userState.address ? userState.address : undefined), async (data: ethers.Event[]) => {
         console.log('[NFTBridge] MessageSent event', data)
 
         const receivedSerialNumber = data[1] as unknown as BigNumber

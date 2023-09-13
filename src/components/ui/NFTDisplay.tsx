@@ -54,11 +54,11 @@ export default function NFTDisplay(props: {
         getOwnedIds()
     }, [XCallympicsNFT, userState.isLoggedIn, userState.address, userState.chainId, props])
 
-    useEvent('NFTBridge', NFTBridgeContract?.filters['TokenBridgedToChain(address,string,uint256)'](userState.address), async () => {
+    useEvent('NFTBridge', NFTBridgeContract?.filters['TokenBridgedToChain(address,string,uint256)'](userState.address ? userState.address : undefined), async () => {
         checkOwnedTokens()
     })
 
-    useEvent('NFTBridge', NFTBridgeContract?.filters['TokenMinted(address,uint256)'](userState.address), async () => {
+    useEvent('NFTBridge', NFTBridgeContract?.filters['TokenMinted(address,uint256)'](userState.address ? userState.address : undefined), async () => {
         checkOwnedTokens()
     })
 
