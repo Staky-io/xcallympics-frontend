@@ -10,8 +10,8 @@ type UserStoreState = {
     address: string
     balance: bigint
     chainId: bigint
-    provider: ethers.BrowserProvider | ethers.AbstractProvider | null
-    signer: ethers.JsonRpcSigner | null
+    provider: ethers.providers.JsonRpcProvider | ethers.providers.BaseProvider | null
+    signer: ethers.Signer | null
     wrongNetwork: boolean
 }
 
@@ -45,25 +45,25 @@ const UserStoreProvider = ({ children }: PropsWithChildren) => {
         setUserState(() => defaultState)
     }
 
-    const loginUser = async (provider: ethers.BrowserProvider, accounts: string[]) => {
-        const signer = new ethers.JsonRpcSigner(provider, accounts[0])
+    const loginUser = async (provider: ethers.providers.JsonRpcProvider, accounts: string[]) => {
+        const signer = provider.getSigner(accounts[0])
         const { chainId } = await provider.getNetwork()
         const balance = await provider.getBalance(accounts[0])
 
         setUserState((s) => {
             s.isLoggedIn = true
             s.address = accounts[0]
-            s.balance = balance
+            s.balance = balance.toBigInt()
             s.provider = provider
             s.signer = signer
-            s.chainId = chainId
-            s.wrongNetwork = !supportedChainIds.includes(chainId)
+            s.chainId = BigInt(chainId)
+            s.wrongNetwork = !supportedChainIds.includes(BigInt(chainId))
         })
     }
 
     const connectWallet = async () => {
         if (window.ethereum) {
-            const provider = new ethers.BrowserProvider(window.ethereum, 'any')
+            const provider = new ethers.providers.JsonRpcProvider(window.ethereum, 'any')
             const accounts = await provider.send('eth_requestAccounts', [])
 
             await loginUser(provider, accounts)
@@ -108,7 +108,7 @@ const UserStoreProvider = ({ children }: PropsWithChildren) => {
     useEffect(() => {
         const autoLoginUser = async () => {
             if (window.ethereum) {
-                const provider = new ethers.BrowserProvider(window.ethereum, 'any')
+                const provider = new ethers.providers.JsonRpcProvider(window.ethereum, 'any')
                 const accounts = await provider.send('eth_accounts', [])
 
                 if (!userState.isLoggedIn && accounts.length > 0) {
@@ -129,13 +129,13 @@ const UserStoreProvider = ({ children }: PropsWithChildren) => {
                     }
 
                     const balance = await provider.getBalance(accounts[0])
-                    const signer = new ethers.JsonRpcSigner(provider, accounts[0])
+                    const signer = provider.getSigner(accounts[0])
                     const { chainId } = await provider.getNetwork()
 
                     setUserState((s) => {
                         s.signer = signer
-                        s.chainId = chainId
-                        s.balance = balance
+                        s.chainId = BigInt(chainId)
+                        s.balance = balance.toBigInt()
                         s.address = accounts[0]
                     })
                 })

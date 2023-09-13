@@ -8,14 +8,14 @@ import XCallympicsNFTAbi from '~/abis/XCallympicsNFT.json'
 export default function getContractInterface(factory: string) {
     switch (factory) {
         case 'NFTBridge':
-            return new ethers.Interface(NFTBridgeAbi)
+            return new ethers.utils.Interface(NFTBridgeAbi)
         case 'XCallympicsNFT':
-            return new ethers.Interface(XCallympicsNFTAbi)
+            return new ethers.utils.Interface(XCallympicsNFTAbi)
         case 'BMC':
-            return new ethers.Interface(BMCAbi)
+            return new ethers.utils.Interface(BMCAbi)
         case 'CallService':
-            return new ethers.Interface(CallServiceAbi)
+            return new ethers.utils.Interface(CallServiceAbi)
         default:
-            return new ethers.Interface(NFTBridgeAbi)
+            return new ethers.utils.Interface(NFTBridgeAbi)
     }
 }

@@ -17,7 +17,8 @@ export default function NFTDisplay(props: {
     const XCallympicsNFT = useContract('XCallympicsNFT') as XCallympicsNFT
 
     const checkOwnedTokens = async () => {
-        const newOwnedIds = await XCallympicsNFT.getUserOwnedTokens(userState.address)
+        const newOwnedIdsQuery = await XCallympicsNFT.getUserOwnedTokens(userState.address)
+        const newOwnedIds = newOwnedIdsQuery.map((id) => id.toBigInt())
         setOwnedIds(newOwnedIds)
 
         return newOwnedIds
@@ -42,7 +43,8 @@ export default function NFTDisplay(props: {
 
         const getOwnedIds = async () => {
             try {
-                const newOwnedIds = await XCallympicsNFT.getUserOwnedTokens(userState.address)
+                const newOwnedIdsQuery = await XCallympicsNFT.getUserOwnedTokens(userState.address)
+                const newOwnedIds = newOwnedIdsQuery.map((id) => id.toBigInt())
                 setOwnedIds(newOwnedIds)
                 props.onClick && props.onClick(newOwnedIds[newOwnedIds.length - 1])
             } catch (e) {
@@ -53,15 +55,15 @@ export default function NFTDisplay(props: {
         getOwnedIds()
     }, [XCallympicsNFT, userState.isLoggedIn, userState.address, userState.chainId, props])
 
-    useEvent('NFTBridge', NFTBridgeContract?.filters['TokenBridgedToChain(address,string,uint256)'], async (data: ethers.ContractEventPayload) => {
+    useEvent('NFTBridge', 'TokenBridgedToChain(address,string,uint256)', async (data: ethers.Event) => {
         console.log('TokenBridgedToChain', data)
-        if (data.args[0].toLowerCase() !== userState.address.toLowerCase()) return
+        if (data.args && data.args[0].toLowerCase() !== userState.address.toLowerCase()) return
         checkOwnedTokens()
     })
 
-    useEvent('NFTBridge', NFTBridgeContract?.filters['TokenMinted(address,uint256)'], async (data: ethers.ContractEventPayload) => {
+    useEvent('NFTBridge', 'TokenMinted(address,uint256)', async (data: ethers.Event) => {
         console.log('TokenMinted', data)
-        if (data.args[0].toLowerCase() !== userState.address.toLowerCase()) return
+        if (data.args && data.args[0].toLowerCase() !== userState.address.toLowerCase()) return
         checkOwnedTokens()
     })
 

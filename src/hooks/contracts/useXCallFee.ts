@@ -23,7 +23,7 @@ export default function useXCallFee({ destionationChain, destinationChainId }: u
                 } else {
                     const to = getBTPAddress(destionationChain, getContractAddress(Number(destinationChainId), 'NFTBridge'))
                     const fee = await NFTBridgeContract.getXCallFee(to, true)
-                    setXcallFee(fee)
+                    setXcallFee(fee.toBigInt())
                 }
             } catch (e) {
                 console.error(e)

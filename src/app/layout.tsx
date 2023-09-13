@@ -11,7 +11,7 @@ const notoSans = Noto_Sans({
 })
 
 export const metadata: Metadata = {
-    title: 'X-Call-ympics',
+    title: 'XCallympics',
     description: 'Make your NFT an olympic champion by making it run through chains with XCalls !'
 }
 

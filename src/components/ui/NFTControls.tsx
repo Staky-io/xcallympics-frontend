@@ -123,13 +123,13 @@ export default function NFTControls(props: NFTControlsProps) {
                     const to = getBTPAddress(destionationChain, userState.address)
                     const feeData = await userState.provider.getFeeData()
 
-                    const functionFee = await NFTBridgeContract.bridgeNFToChain.estimateGas(to, selectedNFT, {
+                    const functionFee = await NFTBridgeContract.estimateGas.bridgeNFToChain(to, selectedNFT, {
                         value: xcallFee,
-                        gasPrice: feeData.gasPrice
+                        gasPrice: feeData.gasPrice?.toBigInt()
                     })
 
                     if (feeData.gasPrice) {
-                        setGasFee(functionFee * feeData.gasPrice)
+                        setGasFee(functionFee.toBigInt() * feeData.gasPrice.toBigInt())
                     } else {
                         setGasFee(0n)
                     }
@@ -171,17 +171,18 @@ export default function NFTControls(props: NFTControlsProps) {
         checkApproval()
     }, [isReady, userState.address, XCallympicsNFTContract, selectedNFT, originChain])
 
-    useEvent('NFTBridge', NFTBridgeContract?.filters['MessageSent(address,uint256,bytes)'], async (data: ethers.ContractEventPayload) => {
+    useEvent('NFTBridge', 'MessageSent', async (data: ethers.Event) => {
         console.log('MessageSent event', data)
 
+        if (!data.args) return
         if (data.args[0].toLowerCase() !== userState.address.toLowerCase()) return
         setIsCallWaitingForBridge(true)
         setWaitingTxSerialNumber(data.args[1])
     })
 
-    useEvent('CallService', CallServiceContract?.filters['CallMessage(string,string,uint256,uint256)'], async (data: ethers.ContractEventPayload) => {
+    useEvent('CallService', 'CallMessage', async (data: ethers.Event) => {
         console.log('CallMessage event', data)
-        if (data.args[2] !== waitingTxSerialNumber) return
+        if (data.args && data.args[2] !== waitingTxSerialNumber) return
         setIsCallWaitingForBridge(false)
     }, Number(destinationChainId))
 
@@ -236,14 +237,14 @@ export default function NFTControls(props: NFTControlsProps) {
                     <div className='w-full my-6 flex-row justify-between items-center inline-flex'>
                         <Text>BTP fee</Text>
                         {originChain !== 0n ? (
-                            <Text>{`${ethers.formatEther(xcallFee)} ${NETWORKS[originChain.toString()].nativeCurrency.symbol}`}</Text>
+                            <Text>{`${ethers.utils.formatEther(xcallFee)} ${NETWORKS[originChain.toString()].nativeCurrency.symbol}`}</Text>
                         ) : '--'}
                     </div>
 
                     <div className='w-full my-6 flex-row justify-between items-center inline-flex'>
                         <Text>Gas fee</Text>
                         {originChain !== 0n && gasFee !== 0n ? (
-                            <Text>{`${ethers.formatEther(gasFee)} ${NETWORKS[originChain.toString()].nativeCurrency.symbol}`}</Text>
+                            <Text>{`${ethers.utils.formatEther(gasFee)} ${NETWORKS[originChain.toString()].nativeCurrency.symbol}`}</Text>
                         ) : '--'}
                     </div>
 
@@ -252,7 +253,7 @@ export default function NFTControls(props: NFTControlsProps) {
                     <div className='w-full flex-row justify-between items-center inline-flex'>
                         <Text>Total fees</Text>
                         {originChain !== 0n ? (
-                            <Text>{`${ethers.formatEther(xcallFee + gasFee)} ${NETWORKS[originChain.toString()].nativeCurrency.symbol}`}</Text>
+                            <Text>{`${ethers.utils.formatEther(xcallFee + gasFee)} ${NETWORKS[originChain.toString()].nativeCurrency.symbol}`}</Text>
                         ) : '--'}
                     </div>
 
