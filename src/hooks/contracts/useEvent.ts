@@ -28,7 +28,7 @@ export default function useEvent(
         contract.on({ ...eventFilter, address: contractAddress }, (...args: ethers.Event[]) => callback(args))
 
         return () => {
-            contract.removeAllListeners(eventFilter)
+            contract.removeAllListeners()
         }
     }, [
         contractName,

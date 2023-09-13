@@ -5,7 +5,7 @@ export const NETWORKS: NetworkList = {
         chainId: BigInt(ChainId.ETH_SEPOLIA),
         chainName: 'Ethereum Sepolia',
         btpID: BTPId.ETH_SEPOLIA,
-        rpcUrls: ['https://ethereum-sepolia.blockpi.network/v1/rpc/public'],
+        rpcUrls: ['https://rpc.notadegen.com/eth/sepolia'],
         nativeCurrency: {
             name: 'SepoliaETH',
             symbol: 'ETH',

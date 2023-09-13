@@ -4,7 +4,7 @@ This is the frontend for the XCallympics project. It is a demonstrator dApp that
 
 ## Links
 
-- [Live demo (TBA)](#)
+- [Live demo](https://xcallympics.netlify.app/)
 - [Contracts repo](https://github.com/Staky-io/xcallympics-core/)
 
 ## How it works

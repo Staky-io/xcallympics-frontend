@@ -19,11 +19,12 @@ export default function NFTControls(props: NFTControlsProps) {
     const [isReady, setIsReady] = useState<boolean>(false)
     const [destionationChain, setDestionationChain] = useState<BTPId>('' as BTPId)
     const [destinationChainId, setDestinationChainId] = useState<bigint>(0n)
+    const [chainToExecuteOn, setChainToExecuteOn] = useState<bigint>(0n)
     const [gasFee, setGasFee] = useState<bigint>(0n)
     const [originChain, setOriginChain] = useState<bigint>(0n)
     const [isTokenApproved, setIsTokenApproved] = useState<boolean>(false)
-    const [waitingTxSerialNumber, setWaitingTxSerialNumber] = useState<bigint>(0n)
-    const [waitingReqId, setWaitingReqId] = useState<{ reqId: bigint, data: string}>({ reqId: 0n, data: '' })
+    const [waitingTxSerialNumber, setWaitingTxSerialNumber] = useState<BigNumber>(BigNumber.from(0))
+    const [waitingReqId, setWaitingReqId] = useState<{ reqId: BigNumber, data: string}>({ reqId: BigNumber.from(0), data: '' })
     const [isCallWaitingForBridge, setIsCallWaitingForBridge] = useState<boolean>(false)
 
     const xcallFee = useXCallFee({ destionationChain, destinationChainId })
@@ -186,44 +187,55 @@ export default function NFTControls(props: NFTControlsProps) {
 
         const receivedSerialNumber = data[1] as unknown as BigNumber
 
-        console.log('[NFTBridge] MessageSent event - receivedSerialNumber', receivedSerialNumber)
-
         setIsCallWaitingForBridge(true)
-        setWaitingTxSerialNumber(receivedSerialNumber.toBigInt())
+        setWaitingTxSerialNumber(receivedSerialNumber)
+        setChainToExecuteOn(destinationChainId)
     })
 
     useEvent('CallService', CallServiceContract?.filters['CallMessage(string,string,uint256,uint256,bytes)'](), async (data: ethers.Event[]) => {
-        console.log('[CallService] CallMessage event - dest chain', data)
+        const receivedTxSerialNumber = data[2] as unknown as BigNumber
+
+        if (!receivedTxSerialNumber.eq(waitingTxSerialNumber)) return
+
         const receivedReqId = data[3] as unknown as BigNumber
         const receivedData = data[4] as unknown as string
 
         setWaitingReqId({
-            reqId: receivedReqId.toBigInt(),
+            reqId: receivedReqId,
             data: receivedData
         })
     }, Number(destinationChainId))
 
-    useEvent('CallService', CallServiceContract?.filters['CallExecuted(uint256,int256,string)'](), async (data: ethers.Event[]) => {
-        console.log('[CallService] CallExecuted event', data)
+    useEvent('CallService', CallServiceContract?.filters['CallExecuted(uint256,int256,string)'](), async () => {
         setIsCallWaitingForBridge(false)
-        setWaitingTxSerialNumber(0n)
+        setWaitingTxSerialNumber(BigNumber.from(0))
+        setWaitingReqId({ reqId: BigNumber.from(0), data: '' })
     })
 
-    if (isCallWaitingForBridge) {
+    if (isCallWaitingForBridge && waitingReqId.reqId.eq(0)) {
         return (
             <div className='text-center'>
                 <Text>Waiting for the XCall message to be received on the other chain.</Text>
-                <Text>This process can take up to 20 minutes, do not close this window !</Text>
+                <Text>This process can take up to 20 minutes, do not close or refresh this window !</Text>
                 <Spinner />
             </div>
         )
-    } else if (!isCallWaitingForBridge && waitingTxSerialNumber !== 0n) {
+    } else if (isCallWaitingForBridge && !waitingReqId.reqId.eq(0)) {
         return (
             <div className='text-center'>
-                <Text>XCall received with id {Number(waitingTxSerialNumber)} !</Text>
+                <Text>Runner NFT received on the destination chain !</Text>
+                <Button
+                    className='w-full mt-10'
+                    onClick={() => switchChain(destinationChainId)}
+                    centered
+                >
+                    Switch chain
+                </Button>
+
                 <Button
                     className='w-full mt-10'
                     onClick={() => executeCall()}
+                    disabled={chainToExecuteOn != userState.chainId}
                     centered
                 >
                     Execute call
