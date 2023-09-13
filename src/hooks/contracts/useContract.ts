@@ -30,7 +30,7 @@ export default function useContract(factoryName: 'NFTBridge' | 'XCallympicsNFT' 
                 const defaultProvider = ethers.getDefaultProvider('sepolia')
                 setContract(factory.connect(contractAddress, defaultProvider))
             } else {
-                const defaultProvider = new ethers.providers.JsonRpcProvider(window.ethereum)
+                const defaultProvider = new ethers.providers.Web3Provider(window.ethereum)
                 setContract(factory.connect(contractAddress, defaultProvider))
             }
 
