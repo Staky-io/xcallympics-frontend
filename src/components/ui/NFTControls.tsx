@@ -1,6 +1,6 @@
-import { ethers } from 'ethers'
+import { BigNumber, ethers } from 'ethers'
 import { useState, useEffect, useContext } from 'react'
-import { Button, Dropdown, Text } from '~/components/common'
+import { Button, Dropdown, Spinner, Text } from '~/components/common'
 import { getBTPAddress, getContractAddress } from '~/helpers'
 import { NETWORKS } from '~/helpers/constants'
 import { useContract, useEvent, useXCallFee } from '~/hooks/contracts'
@@ -23,6 +23,7 @@ export default function NFTControls(props: NFTControlsProps) {
     const [originChain, setOriginChain] = useState<bigint>(0n)
     const [isTokenApproved, setIsTokenApproved] = useState<boolean>(false)
     const [waitingTxSerialNumber, setWaitingTxSerialNumber] = useState<bigint>(0n)
+    const [waitingReqId, setWaitingReqId] = useState<{ reqId: bigint, data: string}>({ reqId: 0n, data: '' })
     const [isCallWaitingForBridge, setIsCallWaitingForBridge] = useState<boolean>(false)
 
     const xcallFee = useXCallFee({ destionationChain, destinationChainId })
@@ -83,6 +84,15 @@ export default function NFTControls(props: NFTControlsProps) {
                 value: xcallFee
             })
             await transferTx.wait()
+        } catch (e) {
+            console.error(e)
+        }
+    }
+
+    const executeCall = async () => {
+        try {
+            const executeCallTx = await CallServiceContract.executeCall(waitingReqId.reqId, waitingReqId.data)
+            await executeCallTx.wait()
         } catch (e) {
             console.error(e)
         }
@@ -171,32 +181,40 @@ export default function NFTControls(props: NFTControlsProps) {
         checkApproval()
     }, [isReady, userState.address, XCallympicsNFTContract, selectedNFT, originChain])
 
-    useEvent('NFTBridge', 'MessageSent', async (data: ethers.Event) => {
-        console.log('MessageSent event', data)
+    useEvent('NFTBridge', NFTBridgeContract?.filters['MessageSent(address,uint256,bytes)'](userState.address), async (data: ethers.Event[]) => {
+        console.log('[NFTBridge] MessageSent event', data)
 
-        if (!data.args) return
-        if (data.args[0].toLowerCase() !== userState.address.toLowerCase()) return
+        const receivedSerialNumber = data[1] as unknown as BigNumber
+
+        console.log('[NFTBridge] MessageSent event - receivedSerialNumber', receivedSerialNumber)
+
         setIsCallWaitingForBridge(true)
-        setWaitingTxSerialNumber(data.args[1])
+        setWaitingTxSerialNumber(receivedSerialNumber.toBigInt())
     })
 
-    useEvent('CallService', 'CallMessage', async (data: ethers.Event) => {
-        console.log('CallMessage event', data)
-        if (data.args && data.args[2] !== waitingTxSerialNumber) return
-        setIsCallWaitingForBridge(false)
+    useEvent('CallService', CallServiceContract?.filters['CallMessage(string,string,uint256,uint256,bytes)'](), async (data: ethers.Event[]) => {
+        console.log('[CallService] CallMessage event - dest chain', data)
+        const receivedReqId = data[3] as unknown as BigNumber
+        const receivedData = data[4] as unknown as string
+
+        setWaitingReqId({
+            reqId: receivedReqId.toBigInt(),
+            data: receivedData
+        })
     }, Number(destinationChainId))
 
-    // useEvent('CallService', CallServiceContract?.filters['CallExecuted(bytes32,uint256,bytes)'], async (data: ethers.ContractEventPayload) => {
-    //     console.log('CallExecuted event', data)
-    //     if (data.args[1] !== waitingTxSerialNumber) return
-    //     setIsCallWaitingForBridge(false)
-    // })
+    useEvent('CallService', CallServiceContract?.filters['CallExecuted(uint256,int256,string)'](), async (data: ethers.Event[]) => {
+        console.log('[CallService] CallExecuted event', data)
+        setIsCallWaitingForBridge(false)
+        setWaitingTxSerialNumber(0n)
+    })
 
     if (isCallWaitingForBridge) {
         return (
             <div className='text-center'>
                 <Text>Waiting for the XCall message to be received on the other chain.</Text>
-                <Text>do not close this window !</Text>
+                <Text>This process can take up to 20 minutes, do not close this window !</Text>
+                <Spinner />
             </div>
         )
     } else if (!isCallWaitingForBridge && waitingTxSerialNumber !== 0n) {
@@ -205,6 +223,7 @@ export default function NFTControls(props: NFTControlsProps) {
                 <Text>XCall received with id {Number(waitingTxSerialNumber)} !</Text>
                 <Button
                     className='w-full mt-10'
+                    onClick={() => executeCall()}
                     centered
                 >
                     Execute call

@@ -5,7 +5,6 @@ import { useContract, useEvent } from '~/hooks/contracts'
 import { UserStoreContext } from '~/stores/User'
 import { NFTBridge, XCallympicsNFT } from '~/types/abi'
 import NFTCard from './NFTCard'
-import { ethers } from 'ethers'
 
 export default function NFTDisplay(props: {
     onClick?: (nftid: bigint) => void
@@ -55,15 +54,11 @@ export default function NFTDisplay(props: {
         getOwnedIds()
     }, [XCallympicsNFT, userState.isLoggedIn, userState.address, userState.chainId, props])
 
-    useEvent('NFTBridge', 'TokenBridgedToChain(address,string,uint256)', async (data: ethers.Event) => {
-        console.log('TokenBridgedToChain', data)
-        if (data.args && data.args[0].toLowerCase() !== userState.address.toLowerCase()) return
+    useEvent('NFTBridge', NFTBridgeContract?.filters['TokenBridgedToChain(address,string,uint256)'](userState.address), async () => {
         checkOwnedTokens()
     })
 
-    useEvent('NFTBridge', 'TokenMinted(address,uint256)', async (data: ethers.Event) => {
-        console.log('TokenMinted', data)
-        if (data.args && data.args[0].toLowerCase() !== userState.address.toLowerCase()) return
+    useEvent('NFTBridge', NFTBridgeContract?.filters['TokenMinted(address,uint256)'](userState.address), async () => {
         checkOwnedTokens()
     })
 

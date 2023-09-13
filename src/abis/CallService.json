@@ -50,6 +50,12 @@
                 "internalType": "uint256",
                 "name": "_reqId",
                 "type": "uint256"
+            },
+            {
+                "indexed": false,
+                "internalType": "bytes",
+                "name": "_data",
+                "type": "bytes"
             }
         ],
         "name": "CallMessage",
@@ -181,6 +187,11 @@
                 "internalType": "uint256",
                 "name": "_reqId",
                 "type": "uint256"
+            },
+            {
+                "internalType": "bytes",
+                "name": "_data",
+                "type": "bytes"
             }
         ],
         "name": "executeCall",

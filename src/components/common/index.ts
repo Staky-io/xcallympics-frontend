@@ -1,8 +1,9 @@
-import Button from './Button'
-import Dropdown from './Dropdown'
-import Heading from './Heading'
-import Input from './Input'
-import Text from './Text'
+export { default as Button } from './Button'
+export { default as Dropdown } from './Dropdown'
+export { default as Heading } from './Heading'
+export { default as Input } from './Input'
+export { default as Spinner } from './Spinner'
+export { default as Text } from './Text'
 
 export const getSize = (size: string | undefined) => {
     if (size === 'smaller') {
@@ -12,12 +13,4 @@ export const getSize = (size: string | undefined) => {
     } else {
         return 'text-16'
     }
-}
-
-export {
-    Button,
-    Dropdown,
-    Heading,
-    Input,
-    Text
 }
